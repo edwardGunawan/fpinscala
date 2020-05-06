@@ -125,5 +125,50 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldLeft(as,(b:B) => b)(h)(s)
   }
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = ???
+  def append[A](as:List[A], r:List[A]): List[A] = foldRight(as,r)(Cons( _, _))
+
+  def concat[A](as:List[List[A]]): List[A] = foldRight(as,Nil:List[A])((a, b) => append(a,b))
+
+  def add1(as:List[Int]): List[Int] = foldLeft(as, Nil:List[Int])((b,a) => Cons(a+1, b))
+
+  def doubleToString(as:List[Double]): List[String] = foldLeft(as, Nil:List[String])((b,a) => Cons(a.toString,b))
+
+  def map[A,B](l: List[A])(f: A => B): List[B] = foldLeft(l, Nil:List[B])((b,a) => Cons(f(a),b))
+
+  def filter[A](l:List[A])(f:A => Boolean): List[A] = foldLeft(l,Nil:List[A])((acc, currVal) => if(f(currVal)) Cons(currVal,acc) else acc)
+
+  def flatMap[A,B](l:List[A])(f:A => List[B]): List[B] = concat(map(l)(f))
+
+  def filterViaFlatMap[A](as:List[A])(f:A => Boolean):List[A] = flatMap(as)(a => if(f(a)) List(a) else Nil)
+
+  def addPairWise(l:List[Int], r:List[Int]):List[Int] = (l,r) match {
+    case (_, Nil) => Nil
+    case (Nil, _) => Nil
+    case (Cons(h1,t1), Cons(h2,t2)) => Cons(h1 + h2, addPairWise(t1,t2))
+  }
+
+  def zipWith[A,B,C](a: List[A], b: List[B])(f: (A,B) => C): List[C] = (a,b) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(h1, t1), Cons(h2,t2)) => Cons(f(h1,h2), zipWith(t1,t2)(f))
+  }
+
+  /*
+    hasSubsequence(List(1,2,3), List(2,3)) == true
+   */
+  @annotation.tailrec
+  def hasSubsequence[A](sup:List[A], sub:List[A]): Boolean = sup match {
+    case Nil => sub == Nil
+    case _ if(startsWith(sup,sub)) => true
+    case Cons(h,t) => hasSubsequence(t, sub)
+  }
+
+  @annotation.tailrec
+  def startsWith[A](sup:List[A], prefix:List[A]):Boolean = (sup, prefix) match {
+    case (_, Nil) => true
+    case (Cons(h,t), Cons(h2,t2)) if h == h2 => startsWith(t,t2) // calculating if the two list has the same
+    case _ => false
+  }
+
+
 }
